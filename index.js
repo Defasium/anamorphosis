@@ -13,7 +13,7 @@ const predictionMode = document
     .getElementsByTagName("input")[0];
 
 inputElement.addEventListener("change", (e) => {
-    if (!e.target.length) return;
+    if (!e.target.files.length) return;
     if (imageURL) URL.revokeObjectURL(imageURL);
     imageURL = URL.createObjectURL(e.target.files[0]);
     imgElement.src = imageURL;
