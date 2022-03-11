@@ -60,6 +60,7 @@ interpolationType.addEventListener('change', evtCallback);
 paintCanvas.addEventListener('mouseup', evtCallback);
 paintCanvas.addEventListener('touchend', evtCallback);
 paintCanvas.addEventListener('touchleave', evtCallback);
+paintCanvas.addEventListener('touchcancel', evtCallback);
 
 const runONNX = async () => {
     if (!model) return;
@@ -103,10 +104,11 @@ const getInterpolationFlag = () => {
 };
 
 const process = async (predOffsets) => {
-    if (!imgElement.complete || !imgElement.src) return;
+    if (!imgElement.complete || !imgElement.src || busy) return;
+    busy = true;
     let k = +offset.value;
     if (predOffsets) k = 0;
-    //const k = offsetVal || ;
+	//const k = offsetVal || ;
     //console.log(k);
     const INTER_FLAG = getInterpolationFlag();
 
@@ -181,6 +183,7 @@ const process = async (predOffsets) => {
         map_x: mapX,
         map_y: mapY
     });
+    busy = false;
 }
 
 
@@ -239,7 +242,7 @@ const get_model = () => {
 };
 
 let onnxSess;
-var busy; // = true;
+var busy = false; // = true;
 const testRun = async () => {
     onnxSess = new onnx.InferenceSession();
     await onnxSess.loadModel(get_model());
