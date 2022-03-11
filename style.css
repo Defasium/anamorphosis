@@ -1,0 +1,278 @@
+* {
+	box-sizing: border-box;
+}
+
+body {
+	font-family: 'Ubuntu', sans-serif;
+	font-weight: bold;
+	position: relative;
+	margin: 0;
+	padding: 0;
+	background: #f9f9f9;
+}
+
+canvas {
+	display: block;
+	cursor: default;
+}
+
+.toolbar {
+	position: relative;
+	top: 0;
+	display: none;
+	width: 100%;
+	padding-right: 10px;
+	padding-bottom: 10px;
+	padding-left: 10px;
+	color: #eee;
+	background: #222;
+	box-shadow: 0 0 2px 2px rgba(47, 47, 47, .5);
+	align-items: center;
+	flex-wrap: wrap;
+	justify-content: center;
+	transition: top .5s;
+}
+
+@media screen and (min-width: 320px) {
+	.toolbar {
+		justify-content: space-around;
+	}
+}
+
+@media screen and (min-width: 768px) {
+	.toolbar {
+		padding-bottom: 0;
+		justify-content: space-between;
+	}
+}
+
+.radius__tool {
+	line-height: 50px;
+	display: flex;
+	align-items: center;
+}
+
+.radius__point {
+	width: 150px;
+}
+
+.radius__point:focus {
+	outline: none;
+}
+
+.radius__point::-webkit-slider-thumb {
+	width: 20px;
+	height: 20px;
+	margin-top: -9px;
+	border: 3px solid #222;
+	border-radius: 50%;
+	background-color: #eee;
+}
+
+.radius__point::-moz-range-thumb {
+	width: 15px;
+	height: 15px;
+	border: 3px solid #222;
+	border-radius: 50%;
+	background-color: #eee;
+}
+
+.radius__point::-ms-thumb {
+	width: 20px;
+	height: 20px;
+	border: 3px solid #222;
+	border-radius: 50%;
+	background-color: #eee;
+}
+
+.radius__point::-webkit-slider-runnable-track {
+	height: 3px;
+	background-color: #eee;
+}
+
+.radius__point:focus::-webkit-slider-runnable-track {
+	outline: none;
+}
+
+.radius__point::-moz-range-track {
+	height: 3px;
+	background-color: #777;
+}
+
+.radius__point::-ms-track {
+	height: 3px;
+	background-color: #777;
+}
+
+.radius__point::-ms-fill-lower {
+	background-color: HotPink;
+}
+
+.radius__point::-ms-fill-upper {
+	background-color: black;
+}
+
+.radius__point,
+.radius__point::-webkit-slider-runnable-track,
+.radius__point::-webkit-slider-thumb {
+	-webkit-appearance: none;
+}
+
+input[type=radio] {
+	display: none;
+}
+
+input[type=radio]:checked+.radio__colors:before {
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	display: inline-block;
+	width: 8px;
+	height: 8px;
+	content: '';
+	transform: translate(-50%, -50%);
+	border: 1px solid #eee;
+	border-radius: 50%;
+	background-color: #222;
+}
+
+.radio__colors {
+	position: relative;
+	display: inline-block;
+	width: 30px;
+	height: 30px;
+	margin-right: 5px;
+	border-radius: 50%;
+	background-color: #111;
+	box-shadow: 0 1px 0 rgba(255, 255, 255, .5) inset, 0 2px 2px rgba(0, 0, 0, .5) inset;
+}
+
+.radio__colors:nth-child(2) {
+	background: #fff;
+}
+
+.radio__colors:nth-child(4) {
+	background: #777;
+}
+
+.radio__colors:nth-child(6) {
+	background: #000;
+}
+
+@media screen and (max-width: 480px) {
+	.buttons__canvas {
+		margin-top: 5px;
+	}
+}
+
+.btn__save {
+	border-color: #74c772;
+	background: #74c772;
+}
+
+.btn__clear {
+	border-color: #ff5b00;
+	background: #ff5b00;
+}
+
+.btn__clear,
+.btn__save {
+	font-family: 'Ubuntu', sans-serif;
+	color: #eee;
+	outline: none;
+}
+
+
+/* The switch - the box around the slider */
+
+
+/*
+.switch {
+  position: relative;
+  top: -35px;
+  left: 600px;
+  display: flex;
+  width: 60px;
+  height: 34px;
+}*/
+
+
+/* The switch - the box around the slider */
+
+.switch {
+	position: relative;
+	display: inline-block;
+	width: 60px;
+	top: -20px;
+	margin-right: 100px;
+	height: 34px;
+	left: 10px;
+	z-index: 10;
+}
+
+.switch p {
+	position: absolute;
+	top: -8px;
+	left: 70px;
+}
+
+
+/* Hide default HTML checkbox */
+
+.switch input {
+	opacity: 0;
+	width: 0;
+	height: 0;
+}
+
+
+/* The slider */
+
+.slider {
+	position: absolute;
+	cursor: pointer;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	background-color: #ccc;
+	-webkit-transition: 0.4s;
+	transition: 0.4s;
+}
+
+.slider:before {
+	position: absolute;
+	content: "";
+	height: 26px;
+	width: 26px;
+	left: 4px;
+	bottom: 4px;
+	background-color: white;
+	-webkit-transition: 0.4s;
+	transition: 0.4s;
+}
+
+input:checked+.slider {
+	background-color: #21f344;
+}
+
+input:focus+.slider {
+	box-shadow: 0 0 1px #21f344;
+}
+
+input:checked+.slider:before {
+	-webkit-transform: translateX(26px);
+	-ms-transform: translateX(26px);
+	transform: translateX(26px);
+}
+
+
+/* Rounded sliders */
+
+.slider.round {
+	border-radius: 34px;
+}
+
+.slider.round:before {
+	border-radius: 50%;
+}
