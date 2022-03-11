@@ -57,6 +57,7 @@ power.addEventListener('input', evtCallback);
 interpolationType.addEventListener('change', evtCallback);
 
 paintCanvas.addEventListener('mouseup', evtCallback);
+paintCanvas.addEventListener('touchend', evtCallback);
 
 const runONNX = async () => {
     if (!model) return;
@@ -73,9 +74,9 @@ const runONNX = async () => {
     canvas.remove();
     //).map(e => e**(+power.value));
     //const MAX_VAL_INV = 255. / Math.max(Math.max(...img0), 1.);
-    const MAX_VAL_INV = 1. / Math.max(Math.max(...img0), 1.);
+    const MAX_VAL_INV = 1. / Math.max(...img0, 1.);
     const img = img0.map(e => (e + 0.1) * MAX_VAL_INV);
-    //console.log(img);
+    //console.log(img);	
     //const input = new onnx.Tensor(img, "float32", [1, 4096]);
     //const output = (await onnxSess.run([input])).values().next().value.data;
     //console.log(output);
@@ -180,12 +181,21 @@ const process = async (predOffsets) => {
     });
 }
 
-imgElement.onload = evtCallback;
 
-function opencvIsReady() {
+const opencvIsReady = async () => {
+    for (let i = 10; i > 0; i--) {
+        try {
+            cv;
+        } catch (e) {
+            console.log(e);
+            await new Promise(r => setTimeout(r, 1000));
+        }
+    }
     document.getElementById('status').textContent = 'OpenCV.js (WebAssembly) is ready.';
-    setTimeout(evtCallback, 10);
-}
+    evtCallback();
+};
+
+imgElement.onload = opencvIsReady;
 
 const base64toBlob = (base64Data, msg, contentType) => {
     console.time(msg);

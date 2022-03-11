@@ -79,11 +79,11 @@
          		await new Promise(r => setTimeout(r, 100));
          	}
          	model = await tf.loadLayersModel('tfjs/model.json');
-         	console.time('prediction');
+         	console.time('testPrediction');
          	const tensorX = tf.tensor(maps[0].map_x, [1, 4096]);
          	const predictOut = model.predict(tensorX);
          	const output = await predictOut.data();
-         	console.timeEnd('prediction');
+         	console.timeEnd('testPrediction');
          	console.log(output);
          });
       </script>
