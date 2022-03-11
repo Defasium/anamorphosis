@@ -1,0 +1,92 @@
+<html>
+   <head>
+      <link rel="stylesheet" href="style.css" />
+   </head>
+   <body>
+      <p id='status'>OpenCV.js (WebAssembly) is loading...</p>
+      <!-- Rounded switch -->
+      <div>
+         <label class="switch">
+            <input type="checkbox" />
+            <span class="slider round"></span>
+            <p>Samples</p>
+         </label>
+		 <button style="display:block-inline;width:100px; height:25px;" onclick="document.getElementById('fileInput').click()">Load Image</button>
+         <input type='file' id='fileInput' accept='image/gif, image/jpeg, image/png' style='display: none;'/>
+         <label for="interp"></label>
+         <select name="interp" id="interp">
+            <option value="nearest">NEAREST</option>
+            <option value="linear">LINEAR</option>
+            <option value="area">AREA</option>
+            <option value="cubic">CUBIC</option>
+            <option value="lanczos4">LANCZOS4</option>
+         </select>
+         <label for="sampleType">Demo</label>
+         <input type='range' id='sampleType' min='1', max='4', step='1'/>
+         <label for="sampleType" hidden>Strength</label>
+         <input type='range' id='powerValue' min='0.0', max='2.5', step='0.05' hidden />
+         <input type='checkbox' id='deformFlag' checked />
+      </div>
+      <!--<input type='button' id='proxyPredict' value='predict'></button>-->
+      <div class='paint'>
+         <!--Hi, this is a basic canvas paint app that i made from a video tutorial, unfortely don't work in mobile browser, at least don't work for my. To work in mobile browser need touch events but i don't how to useds yet...-->  
+         <div id="toolBar" class="toolbar">
+            <div id="radiusTool" class="radius__tool">
+               <span>RADIUS</span>
+               <input type="range" name="radiusPoint" id="radiusPoint" class="radius__point" min="1" max="20" step="1" value="10">
+               <span id="radTextRaduis">10</span>
+            </div>
+            <div id="radiusTool" class="radius__tool">
+               <span>BLUR</span>
+               <input type="range" name="radiusBlur" id="radiusBlur" class="radius__point" min="0" max="20" step="1" value="0">
+               <span id="radTextBlur">0</span>
+            </div>
+            <div id="selectColors" class="select__colors">
+               <input type="radio" name="radioColors" id="white" checked value="#FFFFFF">
+               <label for="white" class="radio__colors"></label>
+               <input type="radio" name="radioColors" id="gray" checked value="#777">
+               <label for="gray" class="radio__colors"></label>
+               <input type="radio" name="radioColors" id="black" checked value="#111111">
+               <label for="black" class="radio__colors"></label>
+            </div>
+            <div class="buttons__canvas">
+               <button type="button" id="saveCanvas" class="btn__save">INVERT</button>
+               <button type="button" id="clearCanvas" class="btn__clear">CLEAR</button>
+            </div>
+         </div>
+         <canvas id="canvas">
+            Sorry, your browser is rubbish.
+         </canvas>
+         <canvas id='outputCanvas'></canvas>
+      </div>
+      <div>
+         <img id='srcImage' src='example.jpeg' hidden></img>
+      </div>
+      <!--<script src="wasm.b64.js"></script>-->
+      <!--<script src="anamorphosis.b64.js"></script>-->
+      <script src="griddata.js"></script>
+      <!--<script src="onnx.min.js"></script>-->
+      <script src="index.js"></script>
+      <script src="paint.js"></script>
+      <!-- Import @tensorflow/tfjs or @tensorflow/tfjs-core -->
+      <script src="tfjs/tf.min.js"> </script>
+      <!-- Adds the WASM backend to the global backend registry -->
+      <script src="tfjs/tf-backend-wasm.js"></script>
+      <script>
+         var model;
+         tf.setBackend('wasm').then(async () => {
+             while (busy) {
+         		await new Promise(r => setTimeout(r, 100));
+         	}
+         	model = await tf.loadLayersModel('tfjs/model.json');
+         	console.time('prediction');
+         	const tensorX = tf.tensor(maps[0].map_x, [1, 4096]);
+         	const predictOut = model.predict(tensorX);
+         	const output = await predictOut.data();
+         	console.timeEnd('prediction');
+         	console.log(output);
+         });
+      </script>
+      <!--<script async src="opencv.js"></script>-->
+      <script async src="opencv.js"></script>
+</html>
