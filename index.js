@@ -13,6 +13,7 @@ const predictionMode = document
     .getElementsByTagName("input")[0];
 
 inputElement.addEventListener("change", (e) => {
+    if (!e.target.length) return;
     if (imageURL) URL.revokeObjectURL(imageURL);
     imageURL = URL.createObjectURL(e.target.files[0]);
     imgElement.src = imageURL;
@@ -58,6 +59,7 @@ interpolationType.addEventListener('change', evtCallback);
 
 paintCanvas.addEventListener('mouseup', evtCallback);
 paintCanvas.addEventListener('touchend', evtCallback);
+paintCanvas.addEventListener('touchleave', evtCallback);
 
 const runONNX = async () => {
     if (!model) return;
