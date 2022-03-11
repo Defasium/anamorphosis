@@ -221,3 +221,9 @@ const generateSvgGrid = async (mapa) => {
     }
     paintCanvas.after(svg);
 };
+
+var Module = {
+    //wasmBinaryFile: 'https://huningxin.github.io/opencv.js/build/wasm/opencv_js.wasm',//URL.createObjectURL(base64toBlob(wasmFile, 'wasmFile')),
+    wasmBinaryFile: 'opencv_js.wasm',
+    _main: opencvIsReady
+};
