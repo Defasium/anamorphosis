@@ -77,7 +77,7 @@ const runONNX = async () => {
     canvas.remove();
     //).map(e => e**(+power.value));
     //const MAX_VAL_INV = 255. / Math.max(Math.max(...img0), 1.);
-    const MAX_VAL_INV = 1. / Math.max(...img0, 1.);
+    const MAX_VAL_INV = 1. / Math.max(...img0, 255.);
     const img = img0.map(e => (e + 0.1) * MAX_VAL_INV);
     //console.log(img);	
     //const input = new onnx.Tensor(img, "float32", [1, 4096]);
