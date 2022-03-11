@@ -1,7 +1,6 @@
 let imgElement = document.getElementById('srcImage');
 let inputElement = document.getElementById('fileInput');
 let remapFlag = document.getElementById('deformFlag');
-//let predictBtn = document.getElementById('proxyPredict');
 let offset = document.getElementById('sampleType');
 let power = document.getElementById('powerValue');
 let interpolationType = document.getElementById('interp');
@@ -75,14 +74,8 @@ const runONNX = async () => {
         //).map(e => ((1-e*INV_BYTE)**(+power.value))*255);
     ).map(e => e ** POWER);
     canvas.remove();
-    //).map(e => e**(+power.value));
-    //const MAX_VAL_INV = 255. / Math.max(Math.max(...img0), 1.);
-    const MAX_VAL_INV = 1. / Math.max(...img0, 1.);
+    const MAX_VAL_INV = 1. / Math.max(...img0, 255.);
     const img = img0.map(e => (e + 0.1) * MAX_VAL_INV);
-    //console.log(img);	
-    //const input = new onnx.Tensor(img, "float32", [1, 4096]);
-    //const output = (await onnxSess.run([input])).values().next().value.data;
-    //console.log(output);
     const tensorX = tf.tensor(img, [1, 4096]);
     const output = await (model.predict(tensorX)).data();
     process(output);
@@ -109,8 +102,6 @@ const process = async (predOffsets) => {
     try {
         let k = +offset.value;
         if (predOffsets) k = 0;
-        //const k = offsetVal || ;
-        //console.log(k);
         const INTER_FLAG = getInterpolationFlag();
 
         let mat = cv.imread(imgElement);
@@ -151,23 +142,10 @@ const process = async (predOffsets) => {
             cv.subtract(map_x, offsetsX, map_x);
             cv.subtract(map_y, offsetsY, map_y);
         }
-        //let map_x = cv.matFromArray(SIZE, SIZE, cv.CV_32F, mapX.map(e=>e*SIZE*4));
-        //let map_y = cv.matFromArray(SIZE, SIZE, cv.CV_32F, mapY.map(e=>e*SIZE*4));
-
-        //cv.resize(map_x, map_x, {width: SIZE*4, height: SIZE*4}, cv.INTER_CUBIC);
-        //cv.resize(map_y, map_y, {width: SIZE*4, height: SIZE*4}, cv.INTER_CUBIC); 
-        /*if (!k) {
-		  //cv.add(map_x, offsetsX, map_x);
-		  cv.subtract(map_x, offsetsX, map_x);
-		  //cv.add(map_y, offsetsY, map_y);
-		  cv.subtract(map_y, offsetsY, map_y);
-	   }*/
-        //cv.resize(mat, dst, {width: SIZE*4, height: SIZE*4}, cv.INTER_CUBIC);
         cv.resize(mat, dst, {
             width: imgElement.width,
             height: imgElement.height
         }, INTER_FLAG);
-        //cv.cvtColor(dst, dst, cv.COLOR_RGBA2GRAY);
         if (remapFlag.checked) {
             cv.remap(dst, dst2, map_x, map_y, INTER_FLAG);
             cv.imshow('outputCanvas', dst2);
@@ -205,64 +183,7 @@ const opencvIsReady = async () => {
 
 imgElement.onload = opencvIsReady;
 
-const base64toBlob = (base64Data, msg, contentType) => {
-    console.time(msg);
-    contentType = contentType || '';
-    const sliceSize = 1024;
-    const byteCharacters = atob(base64Data);
-    const bytesLength = byteCharacters.length;
-    const slicesCount = Math.ceil(bytesLength / sliceSize);
-    const byteArrays = new Array(slicesCount);
-
-    for (let sliceIndex = 0; sliceIndex < slicesCount; ++sliceIndex) {
-        const begin = sliceIndex * sliceSize;
-        const end = Math.min(begin + sliceSize, bytesLength);
-
-        const bytes = new Array(end - begin);
-        for (let offset = begin, i = 0; offset < end; ++i, ++offset) {
-            bytes[i] = byteCharacters[offset].charCodeAt(0);
-        }
-        byteArrays[sliceIndex] = new Uint8Array(bytes);
-    }
-    console.timeEnd(msg);
-    return new Blob(byteArrays, {
-        type: contentType
-    });
-};
-
-
-var Module = {
-    //wasmBinaryFile: 'https://huningxin.github.io/opencv.js/build/wasm/opencv_js.wasm',//URL.createObjectURL(base64toBlob(wasmFile, 'wasmFile')),
-    wasmBinaryFile: 'opencv_js.wasm',
-    _main: opencvIsReady
-};
-
-let modelUrl;
-const get_model = () => {
-    if (!modelUrl)
-        modelUrl = URL.createObjectURL(base64toBlob(modelFile, 'modelFile'));
-    return modelUrl;
-};
-
-let onnxSess;
 var busy = false; // = true;
-const testRun = async () => {
-    onnxSess = new onnx.InferenceSession();
-    await onnxSess.loadModel(get_model());
-    const img = new Float32Array(64 * 64);
-    img.fill(255);
-    console.time('ONNXpredict');
-    var output;
-    for (let i = 0; i < 100; i++) {
-        const input = new onnx.Tensor(img, "float32", [1, 4096]);
-        output = (await onnxSess.run([input])).values().next().value.data; //get("output").data;
-    };
-    console.timeEnd('ONNXpredict');
-    console.log(output);
-    busy = false;
-};
-
-//testRun();
 
 const generateSvgGrid = async (mapa) => {
     const existingSvgs = document.getElementsByClassName('paint')[0].getElementsByTagName('svg');
@@ -277,7 +198,6 @@ const generateSvgGrid = async (mapa) => {
     svg.setAttribute('stroke-width', (mapa.size > 64) ? '.5' : '1');
     svg.style.display = 'inline-block';
 
-    //const mapa = maps[1];
     for (let i = 0; i < mapa.size; i++) {
         const hline = document.createElementNS(svgNS, 'polyline');
         const x_coords = mapa.map_x.slice(mapa.size * i, mapa.size * (i + 1));
@@ -288,8 +208,8 @@ const generateSvgGrid = async (mapa) => {
         hline.setAttribute('points', coords);
         svg.appendChild(hline);
         const vline = document.createElementNS(svgNS, 'polyline');
-        const x_coords2 = mapa.map_x.filter((e, ind) => (ind + i) % mapa.size === 0); //mapa.size*i, mapa.size*(i+1));
-        const y_coords2 = mapa.map_y.filter((e, ind) => (ind + i) % mapa.size === 0); //.slice(mapa.size*i, mapa.size*(i+1));
+        const x_coords2 = mapa.map_x.filter((e, ind) => (ind + i) % mapa.size === 0);
+        const y_coords2 = mapa.map_y.filter((e, ind) => (ind + i) % mapa.size === 0);
         const coords2 = x_coords2.map((e, i) => [Number(e * SIZE).toFixed(1),
             Number(y_coords2[i] * SIZE).toFixed(1)
         ]).join(' ');
