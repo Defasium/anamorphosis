@@ -106,84 +106,87 @@ const getInterpolationFlag = () => {
 const process = async (predOffsets) => {
     if (!imgElement.complete || !imgElement.src || busy) return;
     busy = true;
-    let k = +offset.value;
-    if (predOffsets) k = 0;
-	//const k = offsetVal || ;
-    //console.log(k);
-    const INTER_FLAG = getInterpolationFlag();
+    try {
+        let k = +offset.value;
+        if (predOffsets) k = 0;
+        //const k = offsetVal || ;
+        //console.log(k);
+        const INTER_FLAG = getInterpolationFlag();
 
-    let mat = cv.imread(imgElement);
-    let dst = new cv.Mat();
-    let dst2 = new cv.Mat();
-    const SIZE = maps[k].size;
-    let mapX = maps[k].map_x; //.map(e=>e*SIZE*4);
-    let mapY = maps[k].map_y; //.map(e=>e*SIZE*4);
+        let mat = cv.imread(imgElement);
+        let dst = new cv.Mat();
+        let dst2 = new cv.Mat();
+        const SIZE = maps[k].size;
+        let mapX = maps[k].map_x; //.map(e=>e*SIZE*4);
+        let mapY = maps[k].map_y; //.map(e=>e*SIZE*4);
 
-    let offsetsX;
-    let offsetsY;
+        let offsetsX;
+        let offsetsY;
 
-    let map_x = cv.matFromArray(SIZE, SIZE, cv.CV_32F, mapX.map(e => e * imgElement.width));
-    let map_y = cv.matFromArray(SIZE, SIZE, cv.CV_32F, mapY.map(e => e * imgElement.height));
-    cv.resize(map_x, map_x, {
-        width: imgElement.width,
-        height: imgElement.height
-    }, INTER_FLAG);
-    cv.resize(map_y, map_y, {
-        width: imgElement.width,
-        height: imgElement.height
-    }, INTER_FLAG);
-
-    if (!k) {
-        const POWER = (+power.value) / 2;
-        offsetsX = cv.matFromArray(SIZE, SIZE, cv.CV_32F, predOffsets.slice(0, 4096).map(e => e * imgElement.width * POWER));
-        offsetsY = cv.matFromArray(SIZE, SIZE, cv.CV_32F, predOffsets.slice(4096).map(e => e * imgElement.height * POWER));
-        mapX = mapX.map((e, i) => e + predOffsets[i] * POWER);
-        mapY = mapY.map((e, i) => e + predOffsets[4096 + i] * POWER);
-        cv.resize(offsetsX, offsetsX, {
+        let map_x = cv.matFromArray(SIZE, SIZE, cv.CV_32F, mapX.map(e => e * imgElement.width));
+        let map_y = cv.matFromArray(SIZE, SIZE, cv.CV_32F, mapY.map(e => e * imgElement.height));
+        cv.resize(map_x, map_x, {
             width: imgElement.width,
             height: imgElement.height
         }, INTER_FLAG);
-        cv.resize(offsetsY, offsetsY, {
+        cv.resize(map_y, map_y, {
             width: imgElement.width,
             height: imgElement.height
         }, INTER_FLAG);
-        cv.subtract(map_x, offsetsX, map_x);
-        cv.subtract(map_y, offsetsY, map_y);
-    }
-    //let map_x = cv.matFromArray(SIZE, SIZE, cv.CV_32F, mapX.map(e=>e*SIZE*4));
-    //let map_y = cv.matFromArray(SIZE, SIZE, cv.CV_32F, mapY.map(e=>e*SIZE*4));
 
-    //cv.resize(map_x, map_x, {width: SIZE*4, height: SIZE*4}, cv.INTER_CUBIC);
-    //cv.resize(map_y, map_y, {width: SIZE*4, height: SIZE*4}, cv.INTER_CUBIC); 
-    /*if (!k) {
-      //cv.add(map_x, offsetsX, map_x);
-	  cv.subtract(map_x, offsetsX, map_x);
-      //cv.add(map_y, offsetsY, map_y);
-	  cv.subtract(map_y, offsetsY, map_y);
-   }*/
-    //cv.resize(mat, dst, {width: SIZE*4, height: SIZE*4}, cv.INTER_CUBIC);
-    cv.resize(mat, dst, {
-        width: imgElement.width,
-        height: imgElement.height
-    }, INTER_FLAG);
-    //cv.cvtColor(dst, dst, cv.COLOR_RGBA2GRAY);
-    if (remapFlag.checked) {
-        cv.remap(dst, dst2, map_x, map_y, INTER_FLAG);
-        cv.imshow('outputCanvas', dst2);
-    } else {
-        cv.imshow('outputCanvas', dst);
-    }
-    mat.delete();
-    dst.delete();
-    dst2.delete();
-    map_x.delete();
-    map_y.delete();
-    generateSvgGrid({
-        size: SIZE,
-        map_x: mapX,
-        map_y: mapY
-    });
-    busy = false;
+        if (!k) {
+            const POWER = (+power.value) / 2;
+            offsetsX = cv.matFromArray(SIZE, SIZE, cv.CV_32F, predOffsets.slice(0, 4096).map(e => e * imgElement.width * POWER));
+            offsetsY = cv.matFromArray(SIZE, SIZE, cv.CV_32F, predOffsets.slice(4096).map(e => e * imgElement.height * POWER));
+            mapX = mapX.map((e, i) => e + predOffsets[i] * POWER);
+            mapY = mapY.map((e, i) => e + predOffsets[4096 + i] * POWER);
+            cv.resize(offsetsX, offsetsX, {
+                width: imgElement.width,
+                height: imgElement.height
+            }, INTER_FLAG);
+            cv.resize(offsetsY, offsetsY, {
+                width: imgElement.width,
+                height: imgElement.height
+            }, INTER_FLAG);
+            cv.subtract(map_x, offsetsX, map_x);
+            cv.subtract(map_y, offsetsY, map_y);
+        }
+        //let map_x = cv.matFromArray(SIZE, SIZE, cv.CV_32F, mapX.map(e=>e*SIZE*4));
+        //let map_y = cv.matFromArray(SIZE, SIZE, cv.CV_32F, mapY.map(e=>e*SIZE*4));
+
+        //cv.resize(map_x, map_x, {width: SIZE*4, height: SIZE*4}, cv.INTER_CUBIC);
+        //cv.resize(map_y, map_y, {width: SIZE*4, height: SIZE*4}, cv.INTER_CUBIC); 
+        /*if (!k) {
+		  //cv.add(map_x, offsetsX, map_x);
+		  cv.subtract(map_x, offsetsX, map_x);
+		  //cv.add(map_y, offsetsY, map_y);
+		  cv.subtract(map_y, offsetsY, map_y);
+	   }*/
+        //cv.resize(mat, dst, {width: SIZE*4, height: SIZE*4}, cv.INTER_CUBIC);
+        cv.resize(mat, dst, {
+            width: imgElement.width,
+            height: imgElement.height
+        }, INTER_FLAG);
+        //cv.cvtColor(dst, dst, cv.COLOR_RGBA2GRAY);
+        if (remapFlag.checked) {
+            cv.remap(dst, dst2, map_x, map_y, INTER_FLAG);
+            cv.imshow('outputCanvas', dst2);
+        } else {
+            cv.imshow('outputCanvas', dst);
+        }
+        mat.delete();
+        dst.delete();
+        dst2.delete();
+        map_x.delete();
+        map_y.delete();
+        generateSvgGrid({
+            size: SIZE,
+            map_x: mapX,
+            map_y: mapY
+        });
+    } finally {
+        busy = false;
+    };
 }
 
 
