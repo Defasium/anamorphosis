@@ -11,13 +11,6 @@ const predictionMode = document
     .getElementsByClassName("switch")[0]
     .getElementsByTagName("input")[0];
 
-inputElement.addEventListener("change", (e) => {
-    if (!e.target.files.length) return;
-    if (imageURL) URL.revokeObjectURL(imageURL);
-    imageURL = URL.createObjectURL(e.target.files[0]);
-    imgElement.src = imageURL;
-}, false);
-
 const hideSliders = async () => {
     const hideMap = {
         false: 'none',
@@ -227,3 +220,72 @@ var Module = {
     wasmBinaryFile: 'opencv_js.wasm',
     _main: opencvIsReady
 };
+
+// DICOM Parsing
+
+function readDICOM(name, buf) {
+	console.log("File: " + name);
+	console.log("");
+	var data = new DataView(buf);
+	daikon.Parser.verbose = true;
+	daikon.Series.parseImage(data);
+}
+
+function makeSlice(file, start, length) {
+	var fileType = (typeof File);
+
+	if (fileType === 'undefined') {
+		return function () {};
+	}
+
+	if (File.prototype.slice) {
+		return file.slice(start, start + length);
+	}
+
+	if (File.prototype.mozSlice) {
+		return file.mozSlice(start, length);
+	}
+
+	if (File.prototype.webkitSlice) {
+		return file.webkitSlice(start, length);
+	}
+
+	return null;
+}
+
+function readFile(file) {
+	var blob = makeSlice(file, 0, file.size);
+
+	var reader = new FileReader();
+
+	reader.onloadend = function (evt) {
+		if (evt.target.readyState === FileReader.DONE) {
+			console.log('here');
+			readDICOM(file.name, evt.target.result);
+			console.log(evt.target.result);
+		}
+	};
+
+	reader.readAsArrayBuffer(blob);
+}
+
+function handleFileSelect(evt) {
+	var files = evt.target.files;
+	readFile(files[0]);
+}
+
+inputElement.addEventListener("change", (e) => {
+    if (!e.target.files.length) return;
+    if (imageURL) URL.revokeObjectURL(imageURL);
+    console.log(e.target.files[0]);
+    var data;
+    if (e.target.files[0].name.split('.')[1]==='dcm') {
+		readFile(e.target.files[0]);
+		data = new Blob([e.target.result]);
+	} else {
+		data = e.target.files[0];
+	}
+    console.log(data);
+    imageURL = URL.createObjectURL(data);
+    imgElement.src = imageURL;
+}, false);
