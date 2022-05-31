@@ -263,6 +263,10 @@ function readFile(file) {
 			console.log('here');
 			readDICOM(file.name, evt.target.result);
 			console.log(evt.target.result);
+			data = daikon.Series.parseImage(new DataView(evt.target.result));
+			console.log(data, data.getRows(), data.getCols(), data.getPixelData());
+			imageURL = URL.createObjectURL(new Blob( [ data.getPixelData().value.buffer ], { type: "image/jpeg" } ));
+			imgElement.src = imageURL;
 		}
 	};
 
@@ -281,10 +285,11 @@ inputElement.addEventListener("change", (e) => {
     var data;
     if (e.target.files[0].name.split('.')[1]==='dcm') {
 		readFile(e.target.files[0]);
-		data = new Blob([e.target.result]);
-	} else {
-		data = e.target.files[0];
+		//new Blob([e.target.result]);
+		console.log('data');
+		return;
 	}
+	data = e.target.files[0];
     console.log(data);
     imageURL = URL.createObjectURL(data);
     imgElement.src = imageURL;
