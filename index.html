@@ -12,7 +12,7 @@
             <p>Samples</p>
          </label>
 		 <button style="display:block-inline;width:100px; height:25px;" onclick="document.getElementById('fileInput').click()">Load Image</button>
-         <input type='file' id='fileInput' accept='image/gif, image/jpeg, image/png' style='display: none;'/>
+         <input type='file' id='fileInput' accept='image/gif, image/jpeg, image/png, .dcm' style='display: none;'/>
          <label for="interp"></label>
          <select name="interp" id="interp">
             <option value="nearest">NEAREST</option>
@@ -90,4 +90,5 @@
       </script>
       <!--<script async src="opencv.js"></script>-->
       <script async src="opencv.js"></script>
+      <script async type="text/javascript" src="daikon.min.js"></script>
 </html>
