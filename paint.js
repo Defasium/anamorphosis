@@ -12,6 +12,7 @@ UPDATE 03/31/2017 Now you can apply a blur brush effect.
     var radTextRaduis = document.getElementById('radTextRaduis');
     var radTextBlur = document.getElementById('radTextBlur');
     var radioColors = document.getElementsByName('radioColors');
+	var revertCanvas = document.getElementById('revertCanvas');
     var invertCanvas = document.getElementById('saveCanvas');
     var clearCanvas = document.getElementById('clearCanvas');
     // Variable for touch mobile
@@ -22,7 +23,9 @@ UPDATE 03/31/2017 Now you can apply a blur brush effect.
     // Default radio brush and blur
     var radius = 10;
     var blur = 0;
+	var MAX_HISTORY = 50;
     // Variables draw canvas
+	var backup = [];
     var draggin = false;
     var ctx = canvas.getContext('2d');
 
@@ -37,6 +40,14 @@ UPDATE 03/31/2017 Now you can apply a blur brush effect.
     ctx.fillStyle = '#fff';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     ctx.restore();
+
+    var pushToBackup = function() {
+        backup.push(ctx.getImageData(0, 0, canvas.width, canvas.height).data);
+        if (backup.length > MAX_HISTORY) {
+            backup = backup.slice(1);
+        }
+    }
+    pushToBackup();
     // Seting radius brush
     var setRadiusPoint = function(newRadius) {
         radius = newRadius;
@@ -66,6 +77,7 @@ UPDATE 03/31/2017 Now you can apply a blur brush effect.
     }
     // Clear canvas
     function clearImage() {
+        pushToBackup();
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         ctx.save();
         ctx.fillStyle = '#fff';
@@ -74,12 +86,15 @@ UPDATE 03/31/2017 Now you can apply a blur brush effect.
     }
     // Drawing canvas
     var engage = function(e) {
+		pushToBackup();
         draggin = true;
         putPoint(e);
+		console.log('engage');
     };
     var disengage = function() {
         draggin = false;
         ctx.beginPath();
+		console.log('disengage');
     };
     var putPoint = function(e) {
         const offset = findPos(canvas);
@@ -95,6 +110,7 @@ UPDATE 03/31/2017 Now you can apply a blur brush effect.
     };
     // Functions canvas mobile touch
     function handleStart(evt) {
+        pushToBackup();
         var touches = evt.changedTouches;
         for (var i = 0; i < touches.length; i++) {
             if (isValidTouch(touches[i])) {
@@ -128,7 +144,7 @@ UPDATE 03/31/2017 Now you can apply a blur brush effect.
     }
 
     function handleEnd(evt) {
-        var touches = evt.changedTouches;
+		var touches = evt.changedTouches;
         var offset = findPos(canvas);
         for (var i = 0; i < touches.length; i++) {
             if (isValidTouch(touches[i])) {
@@ -224,8 +240,18 @@ UPDATE 03/31/2017 Now you can apply a blur brush effect.
 
 
     // Invert canvas
+    function revertImage() {
+        // Array 256x256x4
+		if (!backup.length)
+			return;
+		const data = backup.pop();
+		ctx.putImageData(new ImageData(data, canvas.width, canvas.height), 0, 0);
+    }
+
+    // Invert canvas
     function invertImage() {
         // Array 256x256x4
+        pushToBackup();
         const data = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
         for (let i = 0, length = data.length; i < length; i += 4) {
             data[i] = 255 - data[i];
@@ -239,6 +265,7 @@ UPDATE 03/31/2017 Now you can apply a blur brush effect.
         //window.open(data, '_blank', 'location=0, menubar=0');
     }
 
+    revertCanvas.addEventListener('click', revertImage);
     invertCanvas.addEventListener('click', invertImage);
     clearCanvas.addEventListener('click', clearImage);
     canvas.addEventListener('mousedown', engage);
