@@ -260,13 +260,44 @@ function readFile(file) {
 
 	reader.onloadend = function (evt) {
 		if (evt.target.readyState === FileReader.DONE) {
-			console.log('here');
 			readDICOM(file.name, evt.target.result);
-			console.log(evt.target.result);
-			data = daikon.Series.parseImage(new DataView(evt.target.result));
-			console.log(data, data.getRows(), data.getCols(), data.getPixelData());
-			imageURL = URL.createObjectURL(new Blob( [ data.getPixelData().value.buffer ], { type: "image/jpeg" } ));
+
+			var c = document.createElement('canvas');
+			// assuming a series with one parsed image
+			var obj = daikon.Series.parseImage(new DataView(evt.target.result)).getInterpretedData(false, true);
+			var width=obj.numCols;
+			var height=obj.numRows;
+            c.width = width;
+			c.height = height;
+			// Create array view
+			var array = new Uint16Array( obj.data ); 
+
+			// Create context from canvas
+			var ctx = c.getContext("2d");
+
+			// Create ImageData object
+			var imgData = ctx.createImageData(width, height); // width x height
+			var data = imgData.data;
+			console.log(data.byteLength)
+			console.log(imgData);
+			// updating alpha (from http://www.studyjs.com/html5/dicom.html)
+			for (var i = 3, k = 0; i < data.byteLength; i=i+4, k=k+1) {
+                data[i] = 255-array[k]/4095*255;
+			}
+
+			// now we can draw our imagedata onto the canvas
+			ctx.putImageData(imgData, 0, 0);
+
+			var renderer = document.createElement('canvas');
+			renderer.width = 512;//width;
+			renderer.height = 512;//height;
+			renderer.getContext("2d").drawImage(c, 0, 0, renderer.width, renderer.height);
+
+			// Here generate the base64 string
+			imageURL = renderer.toDataURL();
 			imgElement.src = imageURL;
+			c.remove();
+			renderer.remove();
 		}
 	};
 
@@ -285,12 +316,9 @@ inputElement.addEventListener("change", (e) => {
     var data;
     if (e.target.files[0].name.split('.')[1]==='dcm') {
 		readFile(e.target.files[0]);
-		//new Blob([e.target.result]);
-		console.log('data');
 		return;
 	}
 	data = e.target.files[0];
-    console.log(data);
     imageURL = URL.createObjectURL(data);
     imgElement.src = imageURL;
 }, false);
